@@ -1,0 +1,215 @@
+name: Apple
+
+# Public repository: GitHub's macOS runners are free here. It holds the app
+# without any book content (85 sample questions instead) and with free
+# look-alike graphics instead of Nokia's; the private catalogue is put into
+# the finished bundles outside of GitHub.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+env:
+  QT_VERSION: '6.11.1'
+
+jobs:
+  macos:
+    name: macOS (universal, disk image)
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Qt for macOS
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: 'qtimageformats'
+          cache: true
+
+      - run: brew install ninja
+
+      - name: Build
+        run: |
+          cmake -S android -B build -GNinja -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+          cmake --build build
+
+      - name: Put Qt into the bundle
+        run: |
+          macdeployqt build/BioQuiz.app -qmldir=qml -always-overwrite
+          codesign --force --deep --sign - build/BioQuiz.app
+          lipo -info build/BioQuiz.app/Contents/MacOS/BioQuiz
+
+      - name: Start it once
+        run: |
+          BIOQUIZ_TEST="solo:demo,act,pick:0,answer:0" BIOQUIZ_SHOT_MS=6000 \
+          BIOQUIZ_SHOT="$PWD/macos-question.png" build/BioQuiz.app/Contents/MacOS/BioQuiz || true
+          ls -la macos-question.png
+
+      - name: Disk image
+        run: |
+          mkdir dmg
+          cp -R build/BioQuiz.app dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname BioQuiz -srcfolder dmg -ov -format UDZO BioQuiz-macos-demo.dmg
+          ditto -c -k --keepParent build/BioQuiz.app BioQuiz-macos-app.zip
+          ls -la *.dmg *.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bioquiz-macos
+          path: |
+            BioQuiz-macos-demo.dmg
+            BioQuiz-macos-app.zip
+            macos-question.png
+
+  ios-device:
+    name: iOS (unsigned app for a device)
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Host Qt (the tools)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          dir: ${{ runner.temp }}/qt-host
+          set-env: false
+          cache: true
+
+      - name: Qt for iOS
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: ios
+          modules: 'qtimageformats'
+          dir: ${{ runner.temp }}/qt-ios
+          set-env: false
+          cache: true
+
+      - run: brew install ninja
+
+      - name: Build
+        run: |
+          export QT_HOST_PATH="${{ runner.temp }}/qt-host/Qt/${QT_VERSION}/macos"
+          export QT_IOS="${{ runner.temp }}/qt-ios/Qt/${QT_VERSION}/ios"
+          sh ios/build.sh iphoneos
+
+      - name: Package the ipa
+        run: |
+          APP=$(find build-ios-iphoneos -name "BioQuiz.app" -maxdepth 4 | head -1)
+          test -n "$APP"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry BioQuiz-ios-demo-unsigned.ipa Payload
+          ls -la BioQuiz-ios-demo-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bioquiz-ios
+          path: BioQuiz-ios-demo-unsigned.ipa
+
+  ios-simulator:
+    name: iOS simulator (screenshot)
+    runs-on: macos-14
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Host Qt (the tools)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: 'qtshadertools'
+          dir: ${{ runner.temp }}/qt-host
+          set-env: false
+          cache: true
+
+      - run: brew install ninja
+
+      - name: Export paths
+        run: |
+          echo "QT_HOST_PATH=${{ runner.temp }}/qt-host/Qt/${QT_VERSION}/macos" >> $GITHUB_ENV
+          echo "QT_IOS=$PWD/ext/qt-sim" >> $GITHUB_ENV
+
+      # The binary Qt for iOS has device-only plugin initialisers, so the
+      # simulator needs a Qt built from source; the first run takes over an
+      # hour, later ones restore it from the cache.
+      - name: Restore Qt for the simulator
+        id: cache-qt
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ext/qt-sim
+            ext/qtsrc
+            ext/qtbuild
+          key: qt-6.11.1-iphonesimulator-arm64-v1
+          restore-keys: qt-6.11.1-iphonesimulator-arm64-
+
+      - name: Build Qt for the simulator
+        if: steps.cache-qt.outputs.cache-hit != 'true'
+        run: tools/cross/build-qt-ios-sim.sh "$PWD/ext/qt-sim" "$QT_HOST_PATH"
+
+      - name: Save Qt for the simulator
+        if: always() && steps.cache-qt.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ext/qt-sim
+            ext/qtsrc
+            ext/qtbuild
+          key: qt-6.11.1-iphonesimulator-arm64-v1-${{ github.run_id }}
+
+      - name: Build BioQuiz
+        run: sh ios/build.sh iphonesimulator
+
+      - name: Run it
+        run: |
+          set -x
+          DEV=""
+          for name in "iPhone 16" "iPhone 15" "iPhone 14"; do
+              DEV=$(xcrun simctl create bioquiz "$name" 2>/dev/null) && break
+              DEV=""
+          done
+          test -n "$DEV"
+          xcrun simctl boot "$DEV"
+          xcrun simctl bootstatus "$DEV" -b
+          APP=$(find build-ios-iphonesimulator -name "BioQuiz.app" -maxdepth 4 | head -1)
+          xcrun simctl install "$DEV" "$APP"
+          xcrun simctl launch "$DEV" org.smatkovi.bioquiz
+          sleep 20
+          xcrun simctl io "$DEV" screenshot simulator-menu.png
+          xcrun simctl terminate "$DEV" org.smatkovi.bioquiz || true
+          SIMCTL_CHILD_BIOQUIZ_TEST="solo:demo,act,pick:0,answer:0" xcrun simctl launch "$DEV" org.smatkovi.bioquiz
+          sleep 20
+          xcrun simctl io "$DEV" screenshot simulator-question.png
+          xcrun simctl spawn "$DEV" log show --last 3m --style compact \
+              --predicate 'process == "BioQuiz"' > system-log.txt 2>&1 || true
+          xcrun simctl spawn "$DEV" launchctl list | grep -i bioquiz
+          xcrun simctl shutdown "$DEV" || true
+
+      - name: What it said
+        if: always()
+        run: tail -40 system-log.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bioquiz-simulator
+          path: |
+            simulator-menu.png
+            simulator-question.png
+            system-log.txt

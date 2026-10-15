@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=BioQuiz
+Comment=Biologie-Quiz im Stil von Quizduell
+Exec=bioquiz
+Icon=bioquiz
+Categories=Game;Education;

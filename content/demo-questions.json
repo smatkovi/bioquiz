@@ -1,0 +1,103 @@
+[
+  {"cat": "zelle", "q": "Welches Organell ist das „Kraftwerk“ der Zelle?", "a": ["Mitochondrium", "Ribosom", "Golgi-Apparat", "Lysosom"]},
+  {"cat": "zelle", "q": "Was besitzen Pflanzenzellen, Tierzellen aber nicht?", "a": ["Zellwand", "Zellmembran", "Zellkern", "Mitochondrien"]},
+  {"cat": "zelle", "q": "Wo liegt bei Eukaryoten der Großteil der Erbinformation?", "a": ["Im Zellkern", "In der Vakuole", "Im Zellplasma", "In der Zellwand"]},
+  {"cat": "zelle", "q": "Wie heißt die Teilung, bei der zwei gleiche Tochterzellen entstehen?", "a": ["Mitose", "Meiose", "Osmose", "Diffusion"]},
+  {"cat": "zelle", "q": "Wer beschrieb 1665 als Erster „Zellen“ in Kork?", "a": ["Robert Hooke", "Charles Darwin", "Gregor Mendel", "Louis Pasteur"]},
+
+  {"cat": "mikroben", "q": "Womit behandelt man bakterielle Infektionen?", "a": ["Antibiotika", "Antimykotika", "Antihistaminika", "Analgetika"]},
+  {"cat": "mikroben", "q": "Welche Lebewesen haben keinen echten Zellkern?", "a": ["Bakterien", "Pilze", "Algen", "Amöben"]},
+  {"cat": "mikroben", "q": "Welcher Pilz lässt Brotteig aufgehen?", "a": ["Hefe", "Schimmelpilz", "Fliegenpilz", "Champignon"]},
+  {"cat": "mikroben", "q": "Was brauchen Viren, um sich zu vermehren?", "a": ["Eine Wirtszelle", "Sonnenlicht", "Sauerstoff", "Zucker im Wasser"]},
+  {"cat": "mikroben", "q": "Wer entdeckte 1928 das Penicillin?", "a": ["Alexander Fleming", "Robert Koch", "Edward Jenner", "Marie Curie"]},
+
+  {"cat": "stoffwechsel", "q": "Welches Gas nehmen Pflanzen für die Fotosynthese auf?", "a": ["Kohlenstoffdioxid", "Sauerstoff", "Stickstoff", "Methan"]},
+  {"cat": "stoffwechsel", "q": "Welcher Farbstoff fängt in Blättern das Licht ein?", "a": ["Chlorophyll", "Hämoglobin", "Melanin", "Carotin"]},
+  {"cat": "stoffwechsel", "q": "Wie heißen Eiweiße, die chemische Reaktionen beschleunigen?", "a": ["Enzyme", "Hormone", "Antikörper", "Vitamine"]},
+  {"cat": "stoffwechsel", "q": "Welcher Zucker entsteht bei der Fotosynthese?", "a": ["Traubenzucker", "Milchzucker", "Malzzucker", "Fruchtzucker"]},
+  {"cat": "stoffwechsel", "q": "Was entsteht bei der Milchsäuregärung im Muskel?", "a": ["Milchsäure", "Alkohol", "Essigsäure", "Sauerstoff"]},
+
+  {"cat": "pflanzen", "q": "Welcher Teil der Blüte bildet den Pollen?", "a": ["Staubblatt", "Fruchtknoten", "Kelchblatt", "Narbe"]},
+  {"cat": "pflanzen", "q": "Wie heißen die Spaltöffnungen an der Blattunterseite?", "a": ["Stomata", "Vakuolen", "Lentizellen", "Plastiden"]},
+  {"cat": "pflanzen", "q": "Welcher Baum trägt Eicheln?", "a": ["Eiche", "Buche", "Ahorn", "Linde"]},
+  {"cat": "pflanzen", "q": "Wie vermehren sich Farne?", "a": ["Mit Sporen", "Mit Samen", "Mit Zwiebeln", "Mit Knollen"]},
+  {"cat": "pflanzen", "q": "Welcher Nadelbaum verliert im Herbst seine Nadeln?", "a": ["Lärche", "Fichte", "Tanne", "Kiefer"]},
+
+  {"cat": "wirbellose", "q": "Wie viele Beine hat ein Insekt?", "a": ["Sechs", "Acht", "Vier", "Zehn"]},
+  {"cat": "wirbellose", "q": "Zu welcher Gruppe gehören Spinnen?", "a": ["Spinnentiere", "Insekten", "Krebstiere", "Weichtiere"]},
+  {"cat": "wirbellose", "q": "Wie heißt die Entwicklung Ei – Raupe – Puppe – Falter?", "a": ["Vollständige Verwandlung", "Unvollständige Verwandlung", "Häutung", "Knospung"]},
+  {"cat": "wirbellose", "q": "Zu welcher Tiergruppe gehört die Weinbergschnecke?", "a": ["Weichtiere", "Ringelwürmer", "Insekten", "Nesseltiere"]},
+  {"cat": "wirbellose", "q": "Womit atmet ein Regenwurm?", "a": ["Über die Haut", "Mit Kiemen", "Mit Lungen", "Mit Tracheen"]},
+
+  {"cat": "wirbeltiere", "q": "Welches Säugetier kann aktiv fliegen?", "a": ["Fledermaus", "Flughörnchen", "Pinguin", "Strauß"]},
+  {"cat": "wirbeltiere", "q": "Wie atmen Fische?", "a": ["Mit Kiemen", "Mit Lungen", "Über die Haut", "Mit Tracheen"]},
+  {"cat": "wirbeltiere", "q": "Welches Tier ist ein Amphibium?", "a": ["Grasfrosch", "Eidechse", "Blindschleiche", "Ringelnatter"]},
+  {"cat": "wirbeltiere", "q": "Welche Säugetiere legen Eier?", "a": ["Kloakentiere", "Beuteltiere", "Nagetiere", "Paarhufer"]},
+  {"cat": "wirbeltiere", "q": "Welches Tier ist kein Säugetier?", "a": ["Hai", "Delfin", "Wal", "Seehund"]},
+
+  {"cat": "oekologie", "q": "Wie nennt man Lebewesen, die Biomasse zersetzen?", "a": ["Destruenten", "Produzenten", "Konsumenten", "Parasiten"]},
+  {"cat": "oekologie", "q": "Was steht am Anfang jeder Nahrungskette?", "a": ["Grüne Pflanzen", "Pflanzenfresser", "Raubtiere", "Pilze"]},
+  {"cat": "oekologie", "q": "Wie heißt eine Lebensgemeinschaft samt ihrem Lebensraum?", "a": ["Ökosystem", "Population", "Biotop", "Art"]},
+  {"cat": "oekologie", "q": "Welches Gas verstärkt vor allem den Treibhauseffekt?", "a": ["Kohlenstoffdioxid", "Sauerstoff", "Stickstoff", "Argon"]},
+  {"cat": "oekologie", "q": "Was bedeutet „Biodiversität“?", "a": ["Vielfalt des Lebens", "Bodenfruchtbarkeit", "Artensterben", "Biologischer Landbau"]},
+
+  {"cat": "koerper", "q": "Welcher Teil des Herzens pumpt Blut in den Körperkreislauf?", "a": ["Die linke Kammer", "Die rechte Kammer", "Der linke Vorhof", "Der rechte Vorhof"]},
+  {"cat": "koerper", "q": "Welche Blutzellen transportieren Sauerstoff?", "a": ["Rote Blutkörperchen", "Weiße Blutkörperchen", "Blutplättchen", "Lymphzellen"]},
+  {"cat": "koerper", "q": "Welcher ist der längste Knochen des Menschen?", "a": ["Oberschenkelknochen", "Oberarmknochen", "Schienbein", "Wadenbein"]},
+  {"cat": "koerper", "q": "Welches Organ filtert das Blut und bildet Harn?", "a": ["Niere", "Leber", "Milz", "Lunge"]},
+  {"cat": "koerper", "q": "Wo findet in der Lunge der Gasaustausch statt?", "a": ["In den Lungenbläschen", "In der Luftröhre", "Im Kehlkopf", "In den Bronchien"]},
+
+  {"cat": "ernaehrung", "q": "Welcher Nährstoff liefert pro Gramm die meiste Energie?", "a": ["Fett", "Eiweiß", "Kohlenhydrate", "Ballaststoffe"]},
+  {"cat": "ernaehrung", "q": "Welches Vitamin bildet die Haut mithilfe von Sonnenlicht?", "a": ["Vitamin D", "Vitamin C", "Vitamin A", "Vitamin B12"]},
+  {"cat": "ernaehrung", "q": "Wo beginnt die Verdauung von Stärke?", "a": ["Im Mund", "Im Magen", "Im Dickdarm", "In der Speiseröhre"]},
+  {"cat": "ernaehrung", "q": "Wozu dienen Ballaststoffe vor allem?", "a": ["Für eine gute Verdauung", "Als Energiespeicher", "Zum Muskelaufbau", "Zur Blutbildung"]},
+  {"cat": "ernaehrung", "q": "Wo werden die meisten Nährstoffe ins Blut aufgenommen?", "a": ["Im Dünndarm", "Im Magen", "Im Dickdarm", "In der Leber"]},
+
+  {"cat": "nerven", "q": "Welches Organ steuert das Gleichgewicht mit?", "a": ["Das Innenohr", "Die Zunge", "Die Nase", "Die Haut"]},
+  {"cat": "nerven", "q": "Welches Hormon senkt den Blutzuckerspiegel?", "a": ["Insulin", "Adrenalin", "Glukagon", "Thyroxin"]},
+  {"cat": "nerven", "q": "Wie heißt die schnelle, unbewusste Reaktion auf einen Reiz?", "a": ["Reflex", "Instinkt", "Prägung", "Gewöhnung"]},
+  {"cat": "nerven", "q": "Welche Sinneszellen im Auge sehen Farben?", "a": ["Zapfen", "Stäbchen", "Nervenzellen", "Linsenzellen"]},
+  {"cat": "nerven", "q": "Welcher Teil des Gehirns ist für Bewegungsabläufe wichtig?", "a": ["Kleinhirn", "Riechhirn", "Hirnanhangdrüse", "Balken"]},
+
+  {"cat": "gesundheit", "q": "Was bewirkt eine Impfung?", "a": ["Sie trainiert das Immunsystem", "Sie tötet Viren im Blut", "Sie ersetzt Antibiotika", "Sie senkt das Fieber"]},
+  {"cat": "gesundheit", "q": "Welche Zellen bilden Antikörper?", "a": ["B-Zellen", "Rote Blutkörperchen", "Blutplättchen", "Nervenzellen"]},
+  {"cat": "gesundheit", "q": "Welcher Erreger verursacht die Grippe?", "a": ["Ein Virus", "Ein Bakterium", "Ein Pilz", "Ein Wurm"]},
+  {"cat": "gesundheit", "q": "Was ist eine Allergie?", "a": ["Überreaktion des Immunsystems", "Vitaminmangel", "Bakterielle Infektion", "Erbkrankheit des Blutes"]},
+  {"cat": "gesundheit", "q": "Welche Notrufnummer hat die Rettung in Österreich?", "a": ["144", "133", "122", "112"]},
+
+  {"cat": "fortpflanzung", "q": "Wo findet beim Menschen meist die Befruchtung statt?", "a": ["Im Eileiter", "In der Gebärmutter", "Im Eierstock", "In der Scheide"]},
+  {"cat": "fortpflanzung", "q": "Wie lange dauert eine Schwangerschaft beim Menschen etwa?", "a": ["Neun Monate", "Sechs Monate", "Zwölf Monate", "Vier Monate"]},
+  {"cat": "fortpflanzung", "q": "Wie heißt die befruchtete Eizelle?", "a": ["Zygote", "Embryo", "Fötus", "Blastula"]},
+  {"cat": "fortpflanzung", "q": "Was versorgt das Ungeborene mit Nährstoffen?", "a": ["Die Plazenta", "Die Fruchtblase", "Der Eierstock", "Der Eileiter"]},
+  {"cat": "fortpflanzung", "q": "Wie heißt die Zeit der körperlichen Reifung bei Jugendlichen?", "a": ["Pubertät", "Menopause", "Embryonalzeit", "Adoleszenzpause"]},
+
+  {"cat": "genetik", "q": "Wie viele Chromosomen hat eine menschliche Körperzelle?", "a": ["46", "23", "48", "44"]},
+  {"cat": "genetik", "q": "Wer gilt als Begründer der Vererbungslehre?", "a": ["Gregor Mendel", "Charles Darwin", "Carl von Linné", "Robert Koch"]},
+  {"cat": "genetik", "q": "Welche Form hat die DNA?", "a": ["Doppelhelix", "Einzelstrang", "Ring", "Gitter"]},
+  {"cat": "genetik", "q": "Wie nennt man eine dauerhafte Veränderung des Erbguts?", "a": ["Mutation", "Selektion", "Modifikation", "Rekombination"]},
+  {"cat": "genetik", "q": "Welche Base kommt in der DNA nicht vor?", "a": ["Uracil", "Adenin", "Guanin", "Thymin"]},
+
+  {"cat": "evolution", "q": "Wer schrieb „Über die Entstehung der Arten“?", "a": ["Charles Darwin", "Jean-Baptiste Lamarck", "Gregor Mendel", "Alexander von Humboldt"]},
+  {"cat": "evolution", "q": "Welches Tier gilt als Bindeglied zwischen Reptilien und Vögeln?", "a": ["Archaeopteryx", "Tyrannosaurus", "Quastenflosser", "Mammut"]},
+  {"cat": "evolution", "q": "Wie nennt man versteinerte Überreste von Lebewesen?", "a": ["Fossilien", "Mineralien", "Sedimente", "Kristalle"]},
+  {"cat": "evolution", "q": "Wann starben die meisten Dinosaurier aus?", "a": ["Vor etwa 66 Mio. Jahren", "Vor etwa 6 Mio. Jahren", "Vor etwa 660 Mio. Jahren", "Vor etwa 6.600 Jahren"]},
+  {"cat": "evolution", "q": "Was bedeutet „natürliche Auslese“?", "a": ["Besser Angepasste überleben eher", "Der Mensch wählt Tiere aus", "Alle Tiere überleben gleich", "Tiere wählen ihre Nahrung"]},
+
+  {"cat": "verhalten", "q": "Wie nennt man das Lernen durch Belohnung?", "a": ["Lernen am Erfolg", "Prägung", "Reflex", "Instinkt"]},
+  {"cat": "verhalten", "q": "Wer erforschte die Prägung bei Graugänsen?", "a": ["Konrad Lorenz", "Iwan Pawlow", "Karl von Frisch", "Jane Goodall"]},
+  {"cat": "verhalten", "q": "Wie teilen Honigbienen mit, wo Futter ist?", "a": ["Mit einem Tanz", "Mit Gesang", "Mit Farbwechsel", "Mit Summen allein"]},
+  {"cat": "verhalten", "q": "Wie heißt das Verhalten, ein Gebiet gegen Artgenossen zu verteidigen?", "a": ["Revierverhalten", "Brutpflege", "Balz", "Schwarmverhalten"]},
+  {"cat": "verhalten", "q": "Wessen Versuche mit Hunden zeigten die klassische Konditionierung?", "a": ["Iwan Pawlow", "Konrad Lorenz", "Charles Darwin", "Sigmund Freud"]},
+
+  {"cat": "erde", "q": "Wie entsteht Humus?", "a": ["Aus zersetzten Pflanzen- und Tierresten", "Aus Vulkanasche", "Aus Meersalz", "Aus Gletschereis"]},
+  {"cat": "erde", "q": "Welches Gestein entsteht aus abgekühlter Lava?", "a": ["Basalt", "Sandstein", "Marmor", "Kalkstein"]},
+  {"cat": "erde", "q": "Welche Bodenart speichert Wasser am schlechtesten?", "a": ["Sandboden", "Tonboden", "Lehmboden", "Humusboden"]},
+  {"cat": "erde", "q": "Wie heißt die äußerste feste Schicht der Erde?", "a": ["Erdkruste", "Erdmantel", "Äußerer Kern", "Innerer Kern"]},
+  {"cat": "erde", "q": "Welches Tier lockert und durchmischt den Boden besonders?", "a": ["Regenwurm", "Ameise", "Maulwurfsgrille", "Schnecke"]},
+
+  {"cat": "lebensmittel", "q": "Aus welchem Getreide wird klassisch Bier gebraut?", "a": ["Gerste", "Reis", "Mais", "Hirse"]},
+  {"cat": "lebensmittel", "q": "Was wird beim Pasteurisieren abgetötet?", "a": ["Die meisten Keime", "Alle Vitamine", "Die Fette", "Der Zucker"]},
+  {"cat": "lebensmittel", "q": "Welches Getreide enthält kein Gluten?", "a": ["Reis", "Weizen", "Roggen", "Gerste"]},
+  {"cat": "lebensmittel", "q": "Aus welcher Pflanze stammt Kakao?", "a": ["Kakaobaum", "Kaffeestrauch", "Teestrauch", "Vanilleorchidee"]},
+  {"cat": "lebensmittel", "q": "Woraus wird Käse hergestellt?", "a": ["Milch", "Sojaöl", "Getreide", "Eiern"]}
+]

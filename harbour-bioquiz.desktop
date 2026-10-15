@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=BioQuiz
+Comment=Biologie-Quiz im Stil von Quizduell
+Icon=harbour-bioquiz
+Exec=harbour-bioquiz
+Type=Application
+Categories=Game;Education;
+X-Sailfish-ApplicationType=Silica
+
+[X-Sailjail]
+Permissions=Internet;Bluetooth
+OrganizationName=org.smatkovi
+ApplicationName=harbour-bioquiz
+# Bluetooth needs AF_BLUETOOTH sockets, which Sailjail's seccomp filter does
+# not allow for any permission (see harbour-snapszer). The identity above
+# stays as it is: the settings path depends on it.
+Sandboxing=Disabled
