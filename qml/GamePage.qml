@@ -7,9 +7,9 @@ import "."
 HPage {
     id: page
     pageName: "game"
-    title: m.over ? resultTitle() : bank.levelName(m.level)
-    subtitle: m.over ? bank.levelName(m.level)
-                     : qsTr("Runde %1 von %2").arg(Math.max(1, rounds.length)).arg(m.totalRounds || 0)
+    title: m.over ? resultTitle() : Lang.level(m.level)
+    subtitle: m.over ? Lang.level(m.level)
+                     : Lang.t("Runde %1 von %2").arg(Math.max(1, rounds.length)).arg(m.totalRounds || 0)
     headerAccent: m.over ? (resultKind() === "won" ? Theme.positive : resultKind() === "lost" ? "#7A1010" : "#555555")
                          : "transparent"
 
@@ -38,10 +38,10 @@ HPage {
 
     HQuery {
         id: leaveQuery
-        title: qsTr("Spiel verlassen?")
-        message: game.mode === "host" ? qsTr("Das Spiel endet dann für alle.")
-               : game.mode === "guest" ? qsTr("Die anderen spielen ohne dich weiter.") : ""
-        acceptText: qsTr("Verlassen")
+        title: Lang.t("Spiel verlassen?")
+        message: game.mode === "host" ? Lang.t("Das Spiel endet dann für alle.")
+               : game.mode === "guest" ? Lang.t("Die anderen spielen ohne dich weiter.") : ""
+        acceptText: Lang.t("Verlassen")
         onAccepted: game.leave()
     }
 
@@ -95,12 +95,12 @@ HPage {
         return count > 1 ? "draw" : "won"
     }
     function resultTitle() {
-        if (m.aborted) return qsTr("Spiel abgebrochen")
+        if (m.aborted) return Lang.t("Spiel abgebrochen")
         var k = resultKind()
-        return k === "won" ? qsTr("Gewonnen!") : k === "draw" ? qsTr("Unentschieden") : qsTr("Verloren")
+        return k === "won" ? Lang.t("Gewonnen!") : k === "draw" ? Lang.t("Unentschieden") : Lang.t("Verloren")
     }
     function catName(key) {
-        var c = bank.category(key)
+        var c = Lang.cat(key)
         return c && c.name ? c.name : ""
     }
 
@@ -108,25 +108,25 @@ HPage {
     function action() {
         if (m.over) {
             if (game.mode === "guest")
-                return { text: qsTr("Warte auf den Gastgeber …"), look: "normal", enabled: false, act: "" }
-            return { text: qsTr("Nochmal spielen"), look: "accent", enabled: true, act: "rematch" }
+                return { text: Lang.t("Warte auf den Gastgeber …"), look: "normal", enabled: false, act: "" }
+            return { text: Lang.t("Nochmal spielen"), look: "accent", enabled: true, act: "rematch" }
         }
         if (rounds.length === 0)
-            return { text: qsTr("Einen Moment …"), look: "normal", enabled: false, act: "" }
+            return { text: Lang.t("Einen Moment …"), look: "normal", enabled: false, act: "" }
         var r = rounds.length - 1
         var round = rounds[r]
         if (!round.cat) {
             if (round.chooser === me)
-                return { text: qsTr("Thema wählen"), look: "accent", enabled: true, act: "choose" }
-            return { text: qsTr("%1 wählt ein Thema …").arg(nameOf(round.chooser)), look: "normal", enabled: false, act: "" }
+                return { text: Lang.t("Thema wählen"), look: "accent", enabled: true, act: "choose" }
+            return { text: Lang.t("%1 wählt ein Thema …").arg(nameOf(round.chooser)), look: "normal", enabled: false, act: "" }
         }
         if (picksOf(round, me) === null)
-            return { text: qsTr("Spielen: %1").arg(catName(round.cat)), look: "accent", enabled: true, act: "play" }
+            return { text: Lang.t("Spielen: %1").arg(catName(round.cat)), look: "accent", enabled: true, act: "play" }
         var waiting = []
         for (var i = 0; i < players.length; ++i)
             if (picksOf(round, players[i].id) === null) waiting.push(players[i].name)
-        var who = waiting.length <= 3 ? waiting.join(", ") : qsTr("%1 Spieler").arg(waiting.length)
-        return { text: qsTr("Warte auf %1 …").arg(who), look: "normal", enabled: false, act: "" }
+        var who = waiting.length <= 3 ? waiting.join(", ") : Lang.t("%1 Spieler").arg(waiting.length)
+        return { text: Lang.t("Warte auf %1 …").arg(who), look: "normal", enabled: false, act: "" }
     }
     property var next: action()
 
@@ -269,7 +269,7 @@ HPage {
                             anchors.leftMargin: Theme.spacing
                             anchors.right: score.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: modelData.name + (modelData.id === page.me ? qsTr(" (du)") : "")
+                            text: modelData.name + (modelData.id === page.me ? Lang.t(" (du)") : "")
                             font.bold: modelData.id === page.me
                             elide: Text.ElideRight
                             maximumLineCount: 1
@@ -302,7 +302,7 @@ HPage {
             id: column
             width: parent.width
 
-            HSection { text: qsTr("Runden") }
+            HSection { text: Lang.t("Runden") }
 
             Repeater {
                 model: page.m.totalRounds || 0
@@ -336,7 +336,7 @@ HPage {
                             HLabel {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: page.duel && !(roundRow.round !== null && roundRow.round.cat !== "")
-                                text: qsTr("Runde %1").arg(index + 1)
+                                text: Lang.t("Runde %1").arg(index + 1)
                                 color: roundRow.round !== null ? Theme.secondaryText : Theme.disabledText
                                 font.pixelSize: Theme.fontSmall
                                 wrapMode: Text.NoWrap
@@ -344,7 +344,7 @@ HPage {
                             HLabel {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: !page.duel
-                                text: qsTr("Runde %1").arg(index + 1)
+                                text: Lang.t("Runde %1").arg(index + 1)
                                       + (roundRow.round !== null && roundRow.round.cat !== "" ? " · " + page.catName(roundRow.round.cat) : "")
                                 color: roundRow.round !== null ? Theme.text : Theme.disabledText
                                 font.pixelSize: Theme.fontSmall
@@ -478,7 +478,7 @@ HPage {
         HButton {
             width: parent.width
             visible: page.m.over === true
-            text: qsTr("Zum Menü")
+            text: Lang.t("Zum Menü")
             onClicked: game.leave()
         }
     }

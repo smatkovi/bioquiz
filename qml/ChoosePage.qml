@@ -8,8 +8,8 @@ HPage {
     property var round: (game.match.rounds || [])[roundIndex] || ({})
     property bool chosen: false
     property bool started: false
-    title: qsTr("Wähle ein Thema")
-    subtitle: qsTr("Runde %1").arg(roundIndex + 1)
+    title: Lang.t("Wähle ein Thema")
+    subtitle: Lang.t("Runde %1").arg(roundIndex + 1)
 
     // As soon as the questions of the chosen category are there, play them.
     Connections {
@@ -47,7 +47,7 @@ HPage {
             model: page.round.options || []
             Item {
                 id: card
-                property var cat: bank.category(modelData)
+                property var cat: Lang.cat(modelData)
                 width: page.wide ? Math.min((page.bodyWidth - 4 * Theme.margin) / 3, 360 * Theme.u)
                                  : page.bodyWidth - 2 * Theme.margin
                 height: page.wide ? width * 1.1 : 150 * Theme.u

@@ -17,14 +17,16 @@ bool QuestionBank::load(const QString& dataDir)
     m_dataDir = dataDir;
     QFile file(dataDir + QStringLiteral("/bioquiz.json"));
     if (!file.open(QIODevice::ReadOnly)) {
-        m_error = tr("Fragenkatalog fehlt: %1").arg(file.fileName());
+        m_error = QStringLiteral("Fragenkatalog fehlt: %1").arg(file.fileName());
+        m_errorEn = QStringLiteral("Question catalogue missing: %1").arg(file.fileName());
         emit loadedChanged();
         return false;
     }
     QJsonParseError parseError;
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
     if (!doc.isObject()) {
-        m_error = tr("Fragenkatalog beschädigt: %1").arg(parseError.errorString());
+        m_error = QStringLiteral("Fragenkatalog beschädigt: %1").arg(parseError.errorString());
+        m_errorEn = QStringLiteral("Question catalogue damaged: %1").arg(parseError.errorString());
         emit loadedChanged();
         return false;
     }
@@ -43,12 +45,15 @@ bool QuestionBank::load(const QString& dataDir)
     }
 
     m_bookTitles.clear();
+    m_bookTitlesEn.clear();
     QHash<QString, QString> bookLevel;
     const QJsonArray books = root.value(QStringLiteral("books")).toArray();
     for (const QJsonValue& value : books) {
         const QJsonObject book = value.toObject();
         const QString id = book.value(QStringLiteral("id")).toString();
         m_bookTitles.insert(id, book.value(QStringLiteral("title")).toString());
+        if (book.contains(QStringLiteral("title_en")))
+            m_bookTitlesEn.insert(id, book.value(QStringLiteral("title_en")).toString());
         bookLevel.insert(id, book.value(QStringLiteral("level")).toString());
     }
 
@@ -69,6 +74,12 @@ bool QuestionBank::load(const QString& dataDir)
         const QJsonArray answers = o.value(QStringLiteral("a")).toArray();
         for (const QJsonValue& a : answers)
             q.answers.append(a.toString());
+        q.textEn = o.value(QStringLiteral("qe")).toString();
+        const QJsonArray answersEn = o.value(QStringLiteral("ae")).toArray();
+        for (const QJsonValue& a : answersEn)
+            q.answersEn.append(a.toString());
+        if (q.answersEn.size() != 4)
+            q.textEn.clear();
         q.image = o.value(QStringLiteral("i")).toString();
         q.page = o.value(QStringLiteral("p")).toInt();
         if (q.answers.size() != 4 || q.id.isEmpty() || !m_categories.contains(q.cat))
@@ -77,8 +88,26 @@ bool QuestionBank::load(const QString& dataDir)
         m_questions.append(q);
     }
     m_error.clear();
+    m_errorEn.clear();
     emit loadedChanged();
     return !m_questions.isEmpty();
+}
+
+void QuestionBank::setLanguage(const QString& language)
+{
+    const QString lang = language == QLatin1String("en") ? QStringLiteral("en") : QStringLiteral("de");
+    if (lang == m_language)
+        return;
+    m_language = lang;
+    emit loadedChanged();
+}
+
+QVariantList QuestionBank::categories() const
+{
+    QVariantList result;
+    for (const QVariant& value : m_categoryList)
+        result.append(category(value.toMap().value(QStringLiteral("key")).toString()));
+    return result;
 }
 
 QVariantList QuestionBank::levels() const
@@ -91,6 +120,12 @@ QVariantList QuestionBank::levels() const
     for (const QVariant& value : m_levelList) {
         QVariantMap level = value.toMap();
         level.insert(QStringLiteral("count"), counts.value(level.value(QStringLiteral("key")).toString()));
+        if (english()) {
+            if (level.contains(QStringLiteral("name_en")))
+                level.insert(QStringLiteral("name"), level.value(QStringLiteral("name_en")));
+            if (level.contains(QStringLiteral("sub_en")))
+                level.insert(QStringLiteral("sub"), level.value(QStringLiteral("sub_en")));
+        }
         result.append(level);
     }
     return result;
@@ -150,29 +185,34 @@ QVariantMap QuestionBank::question(const QString& id) const
         return result;
     const Question& q = m_questions.at(index);
     result.insert(QStringLiteral("id"), q.id);
-    result.insert(QStringLiteral("text"), q.text);
-    result.insert(QStringLiteral("answers"), q.answers);
+    const bool en = english() && !q.textEn.isEmpty();
+    result.insert(QStringLiteral("text"), en ? q.textEn : q.text);
+    result.insert(QStringLiteral("answers"), en ? q.answersEn : q.answers);
     result.insert(QStringLiteral("cat"), q.cat);
     result.insert(QStringLiteral("image"), imageUrl(q.image));
+    const QString title = english() ? m_bookTitlesEn.value(q.book, m_bookTitles.value(q.book)) : m_bookTitles.value(q.book);
     result.insert(QStringLiteral("source"),
-                  q.page > 0 ? tr("%1, S. %2").arg(m_bookTitles.value(q.book)).arg(q.page)
-                             : m_bookTitles.value(q.book));
+                  q.page > 0 ? (english() ? QStringLiteral("%1, p. %2") : QStringLiteral("%1, S. %2")).arg(title).arg(q.page)
+                             : title);
     return result;
 }
 
 QVariantMap QuestionBank::category(const QString& key) const
 {
-    return m_categories.value(key);
+    QVariantMap cat = m_categories.value(key);
+    if (english() && cat.contains(QStringLiteral("name_en")))
+        cat.insert(QStringLiteral("name"), cat.value(QStringLiteral("name_en")));
+    return cat;
 }
 
 QString QuestionBank::levelName(const QString& key) const
 {
     if (key.isEmpty() || key == QLatin1String("all"))
-        return tr("Alle Schulstufen");
+        return english() ? QStringLiteral("All levels") : QStringLiteral("Alle Schulstufen");
     for (const QVariant& value : m_levelList) {
         const QVariantMap level = value.toMap();
         if (level.value(QStringLiteral("key")).toString() == key)
-            return level.value(QStringLiteral("name")).toString();
+            return level.value(english() && level.contains(QStringLiteral("name_en")) ? QStringLiteral("name_en") : QStringLiteral("name")).toString();
     }
     return key;
 }

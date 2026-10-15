@@ -4,8 +4,8 @@ import "."
 HPage {
     id: page
     pageName: "join"
-    title: qsTr("Spiel beitreten")
-    subtitle: game.phase === "joining" ? qsTr("Verbinde …") : qsTr("Im selben WLAN")
+    title: Lang.t("Spiel beitreten")
+    subtitle: game.phase === "joining" ? Lang.t("Verbinde …") : Lang.t("Im selben WLAN")
 
     Component.onCompleted: { lanBrowser.search(); btDevices.refresh() }
     backRequested: function() {
@@ -30,13 +30,13 @@ HPage {
             id: column
             width: parent.width
 
-            HSection { text: qsTr("Gefundene Spiele") }
+            HSection { text: Lang.t("Gefundene Spiele") }
 
             Repeater {
                 model: lanBrowser.hosts
                 HListItem {
                     title: modelData.name
-                    subtitle: qsTr("%1 · noch %2 Plätze frei").arg(modelData.address).arg(modelData.openSeats)
+                    subtitle: Lang.t("%1 · noch %2 Plätze frei").arg(modelData.address).arg(modelData.openSeats)
                     icon: Theme.img + "icon-m-common-wlan-strength3.png"
                     onClicked: game.join(modelData.address)
                 }
@@ -52,13 +52,13 @@ HPage {
                 HLabel {
                     anchors.centerIn: parent
                     visible: !lanBrowser.searching
-                    text: qsTr("Kein Spiel gefunden")
+                    text: Lang.t("Kein Spiel gefunden")
                     color: Theme.dimText
                 }
             }
 
             HSection {
-                text: qsTr("Bluetooth (gekoppelte Geräte)")
+                text: Lang.t("Bluetooth (gekoppelte Geräte)")
                 visible: btDevices.available
             }
             Repeater {
@@ -74,32 +74,32 @@ HPage {
                 x: Theme.margin
                 width: parent.width - 2 * Theme.margin
                 visible: btDevices.available && btDevices.devices.length === 0
-                text: qsTr("Noch kein Gerät gekoppelt. Koppel das Gerät des Gastgebers einmal in den Bluetooth-Einstellungen.")
+                text: Lang.t("Noch kein Gerät gekoppelt. Koppel das Gerät des Gastgebers einmal in den Bluetooth-Einstellungen.")
                 color: Theme.dimText
                 font.pixelSize: Theme.fontXSmall
             }
 
-            HSection { text: qsTr("Adresse eingeben") }
+            HSection { text: Lang.t("Adresse eingeben") }
             Column {
                 x: Theme.margin
                 width: parent.width - 2 * Theme.margin
                 spacing: Theme.spacing
                 HTextField {
                     id: address
-                    placeholder: qsTr("z. B. 192.168.1.20")
+                    placeholder: Lang.t("z. B. 192.168.1.20")
                     inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
                     onAccepted: if (text.length > 0) game.join(text)
                 }
                 HButton {
                     width: parent.width
                     look: "accent"
-                    text: qsTr("Beitreten")
+                    text: Lang.t("Beitreten")
                     enabled: address.text.length > 0
                     onClicked: game.join(address.text)
                 }
                 HLabel {
                     width: parent.width
-                    text: qsTr("Die Adresse steht beim Gastgeber unter „So treten andere bei“.")
+                    text: Lang.t("Die Adresse steht beim Gastgeber unter „So treten andere bei“.")
                     color: Theme.dimText
                     font.pixelSize: Theme.fontXSmall
                 }

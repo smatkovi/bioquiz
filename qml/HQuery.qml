@@ -6,8 +6,8 @@ Item {
     id: query
     property string title
     property string message
-    property string acceptText: qsTr("Ja")
-    property string rejectText: qsTr("Abbrechen")
+    property string acceptText: Lang.t("Ja")
+    property string rejectText: Lang.t("Abbrechen")
     signal accepted
     signal rejected
 

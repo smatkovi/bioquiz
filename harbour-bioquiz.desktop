@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=BioQuiz
-Comment=Biologie-Quiz im Stil von Quizduell
+Comment=Biology quiz in the style of QuizDuel
+Comment[de]=Biologie-Quiz im Stil von Quizduell
 Icon=harbour-bioquiz
 Exec=harbour-bioquiz
 Type=Application

@@ -1,5 +1,6 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import ".." as App
 
 CoverBackground {
     property var m: game.match
@@ -41,7 +42,7 @@ CoverBackground {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: game.phase === "match" && m !== null && game.myTurnToPlay()
-            text: qsTr("Du bist dran")
+            text: App.Lang.t("Du bist dran")
             font.pixelSize: Theme.fontSizeSmall
             wrapMode: Text.Wrap
         }

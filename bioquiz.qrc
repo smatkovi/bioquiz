@@ -22,6 +22,7 @@
     <file alias="HToolBar.qml">qml/HToolBar.qml</file>
     <file alias="HToolIcon.qml">qml/HToolIcon.qml</file>
     <file alias="JoinPage.qml">qml/JoinPage.qml</file>
+    <file alias="Lang.qml">qml/Lang.qml</file>
     <file alias="LevelPage.qml">qml/LevelPage.qml</file>
     <file alias="LobbyPage.qml">qml/LobbyPage.qml</file>
     <file alias="MainPage.qml">qml/MainPage.qml</file>

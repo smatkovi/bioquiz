@@ -22,6 +22,7 @@ class QuestionBank : public QObject
     Q_PROPERTY(QVariantList categories READ categories NOTIFY loadedChanged)
     Q_PROPERTY(QVariantList levels READ levels NOTIFY loadedChanged)
     Q_PROPERTY(QString error READ error NOTIFY loadedChanged)
+    Q_PROPERTY(QString language READ language NOTIFY loadedChanged)
 
 public:
     struct Question {
@@ -31,6 +32,8 @@ public:
         QString cat;
         QString text;
         QStringList answers; // answers[0] is the right one
+        QString textEn;      // English, empty when not translated
+        QStringList answersEn;
         QString image;       // relative to the data folder, empty without picture
         int page = 0;
     };
@@ -44,9 +47,13 @@ public:
     QString version() const { return m_version; }
     int questionCount() const { return m_questions.size(); }
     int bookCount() const;
-    QVariantList categories() const { return m_categoryList; }
+    QVariantList categories() const;
     QVariantList levels() const;
-    QString error() const { return m_error; }
+    QString error() const { return english() ? m_errorEn : m_error; }
+    QString language() const { return m_language; }
+    // Texts of questions, categories and levels follow this ("de"/"en");
+    // emits loadedChanged so lists in QML refresh.
+    void setLanguage(const QString& language);
 
     int count() const { return m_questions.size(); }
     const Question& at(int index) const { return m_questions.at(index); }
@@ -72,10 +79,14 @@ private:
     QString m_dataDir;
     QString m_version;
     QString m_error;
+    QString m_errorEn;
     QVector<Question> m_questions;
     QHash<QString, int> m_byId;
     QVariantList m_categoryList;
     QHash<QString, QVariantMap> m_categories;
     QVariantList m_levelList;
     QHash<QString, QString> m_bookTitles;
+    QHash<QString, QString> m_bookTitlesEn;
+    QString m_language = QStringLiteral("de");
+    bool english() const { return m_language == QLatin1String("en"); }
 };

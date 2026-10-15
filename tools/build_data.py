@@ -21,16 +21,17 @@ import sys
 import unicodedata
 
 LEVELS = [
-    {'key': '5',  'name': '5. Schulstufe',  'sub': '1. Klasse MS/AHS'},
-    {'key': '6',  'name': '6. Schulstufe',  'sub': '2. Klasse MS/AHS'},
-    {'key': '7',  'name': '7. Schulstufe',  'sub': '3. Klasse MS/AHS'},
-    {'key': '8',  'name': '8. Schulstufe',  'sub': '4. Klasse MS/AHS'},
-    {'key': '9',  'name': '9. Schulstufe',  'sub': '5. Klasse AHS'},
-    {'key': '10', 'name': '10. Schulstufe', 'sub': '6. Klasse AHS'},
-    {'key': '11', 'name': '11. Schulstufe', 'sub': '7. Klasse AHS'},
-    {'key': '12', 'name': '12. Schulstufe', 'sub': '8. Klasse AHS'},
-    {'key': 'bs', 'name': 'Berufsschule',   'sub': 'Lebensmittel-Warenkunde'},
-    {'key': 'demo', 'name': 'Beispielfragen', 'sub': 'öffentliche Testfassung ohne Buchinhalte'},
+    {'key': '5',  'name': '5. Schulstufe',  'sub': '1. Klasse MS/AHS',  'name_en': 'Grade 5',  'sub_en': '1st year, lower secondary'},
+    {'key': '6',  'name': '6. Schulstufe',  'sub': '2. Klasse MS/AHS',  'name_en': 'Grade 6',  'sub_en': '2nd year, lower secondary'},
+    {'key': '7',  'name': '7. Schulstufe',  'sub': '3. Klasse MS/AHS',  'name_en': 'Grade 7',  'sub_en': '3rd year, lower secondary'},
+    {'key': '8',  'name': '8. Schulstufe',  'sub': '4. Klasse MS/AHS',  'name_en': 'Grade 8',  'sub_en': '4th year, lower secondary'},
+    {'key': '9',  'name': '9. Schulstufe',  'sub': '5. Klasse AHS',     'name_en': 'Grade 9',  'sub_en': '5th year AHS, upper secondary'},
+    {'key': '10', 'name': '10. Schulstufe', 'sub': '6. Klasse AHS',     'name_en': 'Grade 10', 'sub_en': '6th year AHS, upper secondary'},
+    {'key': '11', 'name': '11. Schulstufe', 'sub': '7. Klasse AHS',     'name_en': 'Grade 11', 'sub_en': '7th year AHS, upper secondary'},
+    {'key': '12', 'name': '12. Schulstufe', 'sub': '8. Klasse AHS',     'name_en': 'Grade 12', 'sub_en': '8th year AHS, upper secondary'},
+    {'key': 'bs', 'name': 'Berufsschule',   'sub': 'Lebensmittel-Warenkunde', 'name_en': 'Vocational school', 'sub_en': 'Food product knowledge'},
+    {'key': 'demo', 'name': 'Beispielfragen', 'sub': 'öffentliche Testfassung ohne Buchinhalte',
+     'name_en': 'Sample questions', 'sub_en': 'public test edition without book content'},
 ]
 MAX_Q, MAX_A = 160, 60
 
@@ -98,10 +99,13 @@ def main():
     problems = []
     questions = []
     if args.demo:
-        books = [{'id': 'demo', 'title': 'Beispielfragen', 'level': 'demo'}]
+        books = [{'id': 'demo', 'title': 'Beispielfragen', 'title_en': 'Sample questions', 'level': 'demo'}]
         for q in json.load(open(os.path.join(root, 'content/demo-questions.json'), encoding='utf-8')):
-            questions.append({'b': 'demo', 'c': q['cat'], 'q': clean(q['q']),
-                              'a': [clean(a) for a in q['a']], 'p': 0, 'img': ''})
+            item = {'b': 'demo', 'c': q['cat'], 'q': clean(q['q']),
+                    'a': [clean(a) for a in q['a']], 'p': 0, 'img': ''}
+            if q.get('q_en') and len(q.get('a_en', [])) == 4:
+                item['en'] = {'q': clean(q['q_en']), 'a': [clean(a) for a in q['a_en']]}
+            questions.append(item)
     else:
         for b in books:
             questions += load_book(root, b['id'], cat_keys, problems)
@@ -119,12 +123,25 @@ def main():
         unique.append(q)
     dropped = len(questions) - len(unique)
 
+    # Englische Fassungen: content/translations/en/<buch>.json, {id: {q, a}},
+    # a in derselben Reihenfolge wie die deutsche Frage (a[0] richtig).
+    translations = {}
+    for path in glob.glob(os.path.join(root, 'content/translations/en/*.json')):
+        try:
+            translations.update(json.load(open(path, encoding='utf-8')))
+        except ValueError as e:
+            problems.append(f'{path}: kein gültiges JSON ({e})')
+
     figs_out = os.path.join(data_dir, 'figs')
     result = []
     missing = 0
     for q in unique:
         h = hashlib.sha1(f"{q['b']}|{q['q']}|{q['a'][0]}".encode('utf-8')).hexdigest()[:10]
         item = {'id': h, 'b': q['b'], 'c': q['c'], 'q': q['q'], 'a': q['a'], 'p': q['p']}
+        en = q.get('en') or translations.get(h)
+        if en and en.get('q') and len(en.get('a', [])) == 4 and len({norm(a) for a in en['a']}) == 4:
+            item['qe'] = clean(en['q'])
+            item['ae'] = [clean(a) for a in en['a']]
         if q['img']:
             src = os.path.join(args.figs or '', q['b'], 'figs', q['img'] + '.jpg')
             rel = f"figs/{q['b']}/{q['img']}.webp"
@@ -174,15 +191,19 @@ def main():
     used_levels = {level_of[q['b']] for q in result}
     catalog = {
         'version': version,
-        'categories': [{'key': c['key'], 'name': c['name'], 'color': c['color']} for c in cats],
+        'categories': [{'key': c['key'], 'name': c['name'], 'name_en': c.get('name_en', c['name']), 'color': c['color']}
+                       for c in cats],
         'levels': [l for l in LEVELS if l['key'] in used_levels],
-        'books': [{'id': b['id'], 'title': b['title'], 'level': b['level']} for b in books],
+        'books': [dict({'id': b['id'], 'title': b['title'], 'level': b['level']},
+                       **({'title_en': b['title_en']} if b.get('title_en') else {})) for b in books],
         'questions': result,
     }
     with open(os.path.join(data_dir, 'bioquiz.json'), 'w', encoding='utf-8') as f:
         json.dump(catalog, f, ensure_ascii=False, separators=(',', ':'))
 
     pictures = sum(1 for q in result if 'i' in q)
+    english = sum(1 for q in result if 'qe' in q)
+    print(f'englisch: {english} von {len(result)}')
     print(f'{len(result)} Fragen ({pictures} mit Bild), {dropped} Doppelte entfernt, '
           f'{missing} Bildfragen ohne Bild verworfen, {len(problems)} Probleme, Version {version}')
     per_level = {}

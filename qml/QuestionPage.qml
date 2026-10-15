@@ -22,12 +22,12 @@ HPage {
     property bool submitted: false
     readonly property int limit: 20000
 
-    property var question: qids.length > q ? bank.question(qids[q]) : ({})
-    property var category: bank.category(round.cat || "")
+    property var question: qids.length > q ? Lang.question(qids[q]) : ({})
+    property var category: Lang.cat(round.cat || "")
     property bool imageReady: !question.image || picture.status === Image.Ready || picture.status === Image.Error
 
     title: category.name || ""
-    subtitle: qsTr("Frage %1 von %2").arg(q + 1).arg(qids.length)
+    subtitle: Lang.t("Frage %1 von %2").arg(q + 1).arg(qids.length)
     headerAccent: category.color || Theme.highlight
     toolBarVisible: false
 
@@ -38,10 +38,10 @@ HPage {
 
     HQuery {
         id: abortQuery
-        title: qsTr("Runde abbrechen?")
-        message: qsTr("Die offenen Fragen zählen als falsch.")
-        acceptText: qsTr("Abbrechen")
-        rejectText: qsTr("Weiterspielen")
+        title: Lang.t("Runde abbrechen?")
+        message: Lang.t("Die offenen Fragen zählen als falsch.")
+        acceptText: Lang.t("Abbrechen")
+        rejectText: Lang.t("Weiterspielen")
         onAccepted: page.abort()
     }
 
@@ -297,8 +297,8 @@ HPage {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: page.revealed
-            text: page.picked === -1 ? qsTr("Zeit abgelaufen · %1").arg(page.question.source || "")
-                                     : qsTr("Quelle: %1").arg(page.question.source || "")
+            text: page.picked === -1 ? Lang.t("Zeit abgelaufen · %1").arg(page.question.source || "")
+                                     : Lang.t("Quelle: %1").arg(page.question.source || "")
             font.pixelSize: Theme.fontXXSmall
             color: Theme.dimText
             elide: Text.ElideRight
@@ -311,7 +311,7 @@ HPage {
             width: parent.width - 2 * Theme.margin
             visible: page.revealed
             look: "accent"
-            text: page.q + 1 < page.qids.length ? qsTr("Weiter") : qsTr("Fertig")
+            text: page.q + 1 < page.qids.length ? Lang.t("Weiter") : Lang.t("Fertig")
             onClicked: page.proceed()
         }
     }

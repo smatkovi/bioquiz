@@ -8,8 +8,8 @@ HPage {
     id: page
     pageName: "level"
     property string purpose: "solo"
-    title: qsTr("Schulstufe wählen")
-    subtitle: purpose === "solo" ? qsTr("Gegen den Computer") : qsTr("Für alle Mitspieler")
+    title: Lang.t("Schulstufe wählen")
+    subtitle: purpose === "solo" ? Lang.t("Gegen den Computer") : Lang.t("Für alle Mitspieler")
 
     function pick(key) {
         if (purpose === "solo") {
@@ -30,18 +30,18 @@ HPage {
         header: Column {
             width: list.width
             HListItem {
-                title: qsTr("Alle Schulstufen")
-                subtitle: qsTr("%1 Fragen aus allen Büchern").arg(bank.questionCount)
+                title: Lang.t("Alle Schulstufen")
+                subtitle: Lang.t("%1 Fragen aus allen Büchern").arg(bank.questionCount)
                 icon: "qrc:/appicon/bioquiz-128.png"
                 titleColor: game.lastLevel === "all" ? Theme.highlight : Theme.text
                 onClicked: page.pick("all")
             }
-            HSection { text: qsTr("Eine Schulstufe") }
+            HSection { text: Lang.t("Eine Schulstufe") }
         }
         model: bank.levels
         delegate: HListItem {
             title: modelData.name
-            subtitle: qsTr("%1 · %2 Fragen").arg(modelData.sub).arg(modelData.count)
+            subtitle: Lang.t("%1 · %2 Fragen").arg(modelData.sub).arg(modelData.count)
             enabled: modelData.count >= 30
             titleColor: game.lastLevel === modelData.key ? Theme.highlight : Theme.text
             onClicked: page.pick(modelData.key)

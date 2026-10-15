@@ -3,6 +3,7 @@
 #include "QuestionBank.h"
 
 #include <QDateTime>
+#include <QLocale>
 #include <QSet>
 #include <QTimer>
 
@@ -48,6 +49,12 @@ GameController::GameController(QuestionBank* bank, QObject* parent)
     : QObject(parent)
     , m_bank(bank)
 {
+    // German on German systems, English everywhere else, until chosen.
+    const QString saved = m_settings.value(QStringLiteral("language")).toString();
+    m_language = !saved.isEmpty() ? saved
+               : QLocale::system().language() == QLocale::German ? QStringLiteral("de") : QStringLiteral("en");
+    m_bank->setLanguage(m_language);
+
     connect(&m_lan, &LanSession::messageReceived, this, &GameController::onMessage);
     connect(&m_lan, &LanSession::peerLost, this, &GameController::onPeerLost);
     connect(&m_lan, &LanSession::peerJoined, this, [this](int peer) {
@@ -60,7 +67,7 @@ GameController::GameController(QuestionBank* bank, QObject* parent)
         }
     });
     connect(&m_lan, &LanSession::connectionFailed, this, [this](const QString& reason) {
-        emit notice(tr("Verbindung fehlgeschlagen: %1").arg(reason));
+        emit notice(txt("Verbindung fehlgeschlagen: %1", "Connection failed: %1").arg(translateReason(reason)));
         reset();
     });
 }
@@ -76,7 +83,7 @@ GameController::~GameController()
 QString GameController::playerName() const
 {
     const QString name = m_settings.value(QStringLiteral("playerName")).toString().trimmed();
-    return name.isEmpty() ? tr("Ich") : name;
+    return name.isEmpty() ? txt("Ich", "Me") : name;
 }
 
 void GameController::setPlayerName(const QString& name)
@@ -105,6 +112,44 @@ void GameController::setLastLevel(const QString& level)
 {
     m_settings.setValue(QStringLiteral("lastLevel"), level);
     emit settingsChanged();
+}
+
+void GameController::setLanguage(const QString& language)
+{
+    const QString lang = language == QLatin1String("en") ? QStringLiteral("en") : QStringLiteral("de");
+    if (lang == m_language)
+        return;
+    m_language = lang;
+    m_settings.setValue(QStringLiteral("language"), lang);
+    m_bank->setLanguage(lang); // before the signal, so bindings read the new texts
+    emit settingsChanged();
+}
+
+QString GameController::txt(const char* de, const char* en) const
+{
+    return QString::fromUtf8(m_language == QLatin1String("en") ? en : de);
+}
+
+QString GameController::translateReason(const QString& reason) const
+{
+    // The transport layers report in German; Qt's own socket errors are English.
+    if (m_language != QLatin1String("en"))
+        return reason;
+    static const char* const pairs[][2] = {
+        { "Keine Antwort von dieser Adresse", "No answer from that address" },
+        { "Keine Bluetooth-Adresse", "Not a Bluetooth address" },
+        { "Dieses Gerät hat kein Bluetooth", "This device has no Bluetooth" },
+        { "Bluetooth ist ausgeschaltet", "Bluetooth is switched off" },
+        { "Bluetooth ist aus oder nicht erlaubt", "Bluetooth is off or not permitted" },
+        { "Verbindung fehlgeschlagen", "Connection failed" },
+        { "Bluetooth nicht verfügbar", "Bluetooth not available" },
+        { "Keine Antwort über Bluetooth", "No answer over Bluetooth" },
+    };
+    for (const auto& pair : pairs) {
+        if (reason == QString::fromUtf8(pair[0]))
+            return QString::fromUtf8(pair[1]);
+    }
+    return reason;
 }
 
 int GameController::gamesPlayed() const { return m_settings.value(QStringLiteral("gamesPlayed")).toInt(); }
@@ -173,8 +218,8 @@ void GameController::startSolo(const QString& level)
     computer.id = kComputerId;
     computer.computer = true;
     computer.skill = computerSkill();
-    computer.name = computer.skill == 1 ? tr("Computer (leicht)")
-                  : computer.skill == 3 ? tr("Computer (schwer)") : tr("Computer");
+    computer.name = computer.skill == 1 ? txt("Computer (leicht)", "Computer (easy)")
+                  : computer.skill == 3 ? txt("Computer (schwer)", "Computer (hard)") : QStringLiteral("Computer");
     m_match.players << me << computer;
     m_match.begin(*m_bank, freshSeed(), toSet(m_settings.value(QStringLiteral("recent")).toStringList()));
     m_myId = 0;
@@ -191,7 +236,7 @@ bool GameController::host(const QString& level, int passes)
     // Up to 32 at one table: the host and 31 guests. Over Bluetooth a device
     // keeps at most 7 links, so large tables play over the WLAN.
     if (!m_lan.startHosting(playerName(), 2, kMaxGuests, &error)) {
-        emit notice(tr("Spiel kann nicht eröffnet werden: %1").arg(error));
+        emit notice(txt("Spiel kann nicht eröffnet werden: %1", "Cannot host a game: %1").arg(translateReason(error)));
         return false;
     }
     m_level = level;
@@ -233,7 +278,7 @@ QString GameController::uniqueName(const QString& wanted) const
 {
     QString base = wanted.trimmed().left(20);
     if (base.isEmpty())
-        base = tr("Gast");
+        base = QStringLiteral("Gast");
     QString name = base;
     for (int n = 2; ; ++n) {
         bool taken = false;
@@ -434,14 +479,17 @@ void GameController::hostMessage(int peer, const QVariantMap& message)
         if (message.value(QStringLiteral("protocol")).toInt() != kProtocol
             || message.value(QStringLiteral("data")).toString() != m_bank->version()) {
             QVariantMap reject = msg(QStringLiteral("reject"));
-            reject.insert(QStringLiteral("why"), tr("Andere App-Version oder anderer Fragenkatalog – bitte beide Geräte aktualisieren."));
+            // A code, so every guest shows the reason in its own language.
+            reject.insert(QStringLiteral("code"), QStringLiteral("version"));
+            reject.insert(QStringLiteral("why"), QStringLiteral("Andere App-Version oder anderer Fragenkatalog – bitte beide Geräte aktualisieren.")); // for apps before 0.4
             m_lan.sendTo(peer, reject);
             QTimer::singleShot(500, this, [this, peer]() { m_lan.dropPeer(peer); });
             return;
         }
         if (m_phase != QLatin1String("lobby")) {
             QVariantMap reject = msg(QStringLiteral("reject"));
-            reject.insert(QStringLiteral("why"), tr("Das Spiel läuft schon."));
+            reject.insert(QStringLiteral("code"), QStringLiteral("running"));
+            reject.insert(QStringLiteral("why"), QStringLiteral("Das Spiel läuft schon."));
             m_lan.sendTo(peer, reject);
             QTimer::singleShot(500, this, [this, peer]() { m_lan.dropPeer(peer); });
             return;
@@ -483,7 +531,7 @@ void GameController::onPeerLost(int peer)
             reset();
             return;
         }
-        emit notice(tr("Die Verbindung zum Gastgeber ist abgebrochen."));
+        emit notice(txt("Die Verbindung zum Gastgeber ist abgebrochen.", "The connection to the host was lost."));
         reset();
         return;
     }
@@ -504,7 +552,7 @@ void GameController::onPeerLost(int peer)
         return;
     }
     if (!name.isEmpty())
-        emit notice(tr("%1 hat das Spiel verlassen.").arg(name));
+        emit notice(txt("%1 hat das Spiel verlassen.", "%1 has left the game.").arg(name));
     m_match.dropPlayer(playerId);
     hostChanged();
 }
@@ -516,7 +564,14 @@ void GameController::guestMessage(const QVariantMap& message)
         m_myId = message.value(QStringLiteral("you")).toInt();
         setMode(QStringLiteral("guest"), QStringLiteral("lobby"));
     } else if (type == QLatin1String("reject")) {
-        emit notice(message.value(QStringLiteral("why")).toString());
+        const QString code = message.value(QStringLiteral("code")).toString();
+        if (code == QLatin1String("version"))
+            emit notice(txt("Andere App-Version oder anderer Fragenkatalog – bitte beide Geräte aktualisieren.",
+                            "Different app version or question catalogue – please update both devices."));
+        else if (code == QLatin1String("running"))
+            emit notice(txt("Das Spiel läuft schon.", "The game has already started."));
+        else
+            emit notice(message.value(QStringLiteral("why")).toString());
         reset();
     } else if (type == QLatin1String("lobby")) {
         m_lobby = message.value(QStringLiteral("players")).toList();
@@ -546,7 +601,7 @@ void GameController::guestMessage(const QVariantMap& message)
             recordResult();
         }
     } else if (type == QLatin1String("closed")) {
-        emit notice(tr("Der Gastgeber hat das Spiel beendet."));
+        emit notice(txt("Der Gastgeber hat das Spiel beendet.", "The host has ended the game."));
         reset();
     }
 }

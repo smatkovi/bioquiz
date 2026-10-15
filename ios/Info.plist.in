@@ -5,6 +5,11 @@
 	<key>CFBundleExecutable</key><string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key><string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
 	<key>CFBundleName</key><string>BioQuiz</string>
+	<!-- English and German; without CFBundleLocalizations Qt reports English as
+	     the system language on iOS. The German permission text is in
+	     de.lproj/InfoPlist.strings (ios/lproj). -->
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleLocalizations</key><array><string>en</string><string>de</string></array>
 	<key>CFBundleDisplayName</key><string>BioQuiz</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>
@@ -47,7 +52,7 @@
 	     needs Apple's multicast entitlement; without it a host is joined by
 	     its address. -->
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Zum Spielen mit anderen Geräten im selben WLAN.</string>
+	<string>To play with other devices on the same Wi-Fi.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_bioquiz._tcp</string>

@@ -84,7 +84,8 @@ elseif(IOS)
     file(GLOB BIOQUIZ_IOS_ICONS "${BIOQUIZ_ROOT}/ios/icons/*.png")
     add_custom_command(TARGET bioquiz POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${BIOQUIZ_ROOT}/data" "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/data"
-        COMMAND ${CMAKE_COMMAND} -E copy ${BIOQUIZ_IOS_ICONS} "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/")
+        COMMAND ${CMAKE_COMMAND} -E copy ${BIOQUIZ_IOS_ICONS} "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${BIOQUIZ_ROOT}/ios/lproj" "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/")
 elseif(APPLE)
     # macOS: BioQuiz.app with the catalogue in Contents/Resources/data. The
     # public build carries the sample questions; the full catalogue is put
@@ -101,7 +102,8 @@ elseif(APPLE)
         MACOSX_BUNDLE_BUNDLE_VERSION "${BIOQUIZ_VERSION_CODE}"
     )
     add_custom_command(TARGET bioquiz POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${BIOQUIZ_ROOT}/data" "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/Resources/data")
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${BIOQUIZ_ROOT}/data" "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/Resources/data"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${BIOQUIZ_ROOT}/ios/lproj" "$<TARGET_BUNDLE_CONTENT_DIR:bioquiz>/Resources")
 elseif(WIN32)
     # One portable BioQuiz.exe: static Qt, and the question catalogue with its
     # pictures compiled in as a resource (read from :/data).

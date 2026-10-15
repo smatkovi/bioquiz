@@ -32,6 +32,9 @@ class GameController : public QObject
     Q_PROPERTY(QString playerName READ playerName WRITE setPlayerName NOTIFY settingsChanged)
     Q_PROPERTY(int computerSkill READ computerSkill WRITE setComputerSkill NOTIFY settingsChanged)
     Q_PROPERTY(QString lastLevel READ lastLevel WRITE setLastLevel NOTIFY settingsChanged)
+    // "de" or "en"; only what this device shows -- players of both languages
+    // share a table, the network carries question ids, not texts.
+    Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY settingsChanged)
     Q_PROPERTY(int gamesPlayed READ gamesPlayed NOTIFY settingsChanged)
     Q_PROPERTY(int gamesWon READ gamesWon NOTIFY settingsChanged)
 
@@ -56,6 +59,8 @@ public:
     void setComputerSkill(int skill);
     QString lastLevel() const;
     void setLastLevel(const QString& level);
+    QString language() const { return m_language; }
+    void setLanguage(const QString& language);
     int gamesPlayed() const;
     int gamesWon() const;
 
@@ -95,6 +100,9 @@ private:
     void rememberQuestions();
     void recordResult();
     QString uniqueName(const QString& wanted) const;
+    // German or English text, by the language of this device.
+    QString txt(const char* de, const char* en) const;
+    QString translateReason(const QString& reason) const;
 
     QuestionBank* m_bank;
     LanSession m_lan;
@@ -110,4 +118,5 @@ private:
     QString m_hostName;
     int m_generation = 0;        // invalidates timers of an earlier match
     bool m_resultRecorded = false;
+    QString m_language;
 };
