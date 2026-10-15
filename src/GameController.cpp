@@ -55,21 +55,56 @@ GameController::GameController(QuestionBank* bank, QObject* parent)
                : QLocale::system().language() == QLocale::German ? QStringLiteral("de") : QStringLiteral("en");
     m_bank->setLanguage(m_language);
 
-    connect(&m_lan, &LanSession::messageReceived, this, &GameController::onMessage);
-    connect(&m_lan, &LanSession::peerLost, this, &GameController::onPeerLost);
-    connect(&m_lan, &LanSession::peerJoined, this, [this](int peer) {
-        if (m_mode == QLatin1String("guest")) {
-            QVariantMap hello = msg(QStringLiteral("hello"));
-            hello.insert(QStringLiteral("name"), playerName());
-            hello.insert(QStringLiteral("protocol"), kProtocol);
-            hello.insert(QStringLiteral("data"), m_bank->version());
-            m_lan.sendTo(peer, hello);
-        }
-    });
-    connect(&m_lan, &LanSession::connectionFailed, this, [this](const QString& reason) {
-        emit notice(txt("Verbindung fehlgeschlagen: %1", "Connection failed: %1").arg(translateReason(reason)));
-        reset();
-    });
+    // By signature, so the same code builds against Qt 4 (MeeGo) as well.
+    connect(&m_lan, SIGNAL(messageReceived(int,QVariantMap)), this, SLOT(onMessage(int,QVariantMap)));
+    connect(&m_lan, SIGNAL(peerLost(int)), this, SLOT(onPeerLost(int)));
+    connect(&m_lan, SIGNAL(peerJoined(int)), this, SLOT(onPeerJoined(int)));
+    connect(&m_lan, SIGNAL(connectionFailed(QString)), this, SLOT(onConnectionFailed(QString)));
+}
+
+void GameController::onPeerJoined(int peer)
+{
+    if (m_mode == QLatin1String("guest")) {
+        QVariantMap hello = msg(QStringLiteral("hello"));
+        hello.insert(QStringLiteral("name"), playerName());
+        hello.insert(QStringLiteral("protocol"), kProtocol);
+        hello.insert(QStringLiteral("data"), m_bank->version());
+        m_lan.sendTo(peer, hello);
+    }
+}
+
+void GameController::onConnectionFailed(const QString& reason)
+{
+    emit notice(txt("Verbindung fehlgeschlagen: %1", "Connection failed: %1").arg(translateReason(reason)));
+    reset();
+}
+
+void GameController::computerChooses()
+{
+    if (m_pendingChoices.isEmpty())
+        return;
+    const PendingChoice pending = m_pendingChoices.takeFirst();
+    if (pending.generation != m_generation || m_match.current() != pending.round || m_match.rounds.isEmpty())
+        return;
+    const QStringList options = m_match.rounds.last().options;
+    if (options.isEmpty())
+        return;
+    std::mt19937 rng(freshSeed());
+    const QString cat = options.at(static_cast<int>(rng() % options.size()));
+    if (m_match.choose(*m_bank, pending.player, cat))
+        hostChanged();
+}
+
+void GameController::refreshIfCurrent(int generation)
+{
+    if (generation == m_generation)
+        hostChanged();
+}
+
+void GameController::dropRejectedPeer()
+{
+    if (!m_rejectedPeers.isEmpty())
+        m_lan.dropPeer(m_rejectedPeers.takeFirst());
 }
 
 GameController::~GameController()
@@ -377,18 +412,9 @@ void GameController::scheduleComputers()
         if (!p.computer)
             continue;
         if (round.cat.isEmpty() && round.chooser == p.id) {
-            const int id = p.id;
-            QTimer::singleShot(1400, this, [this, generation, id, roundIndex]() {
-                if (generation != m_generation || m_match.current() != roundIndex)
-                    return;
-                const QStringList options = m_match.rounds.last().options;
-                if (options.isEmpty())
-                    return;
-                std::mt19937 rng(freshSeed());
-                const QString cat = options.at(static_cast<int>(rng() % options.size()));
-                if (m_match.choose(*m_bank, id, cat))
-                    hostChanged();
-            });
+            const PendingChoice pending = { generation, p.id, roundIndex };
+            m_pendingChoices.append(pending);
+            QTimer::singleShot(1400, this, SLOT(computerChooses()));
         } else if (!round.cat.isEmpty() && !round.picks.contains(p.id)) {
             // The computer "plays" its round at once; its answers only show
             // up next to the player's own once the player has answered too.
@@ -402,10 +428,7 @@ void GameController::scheduleComputers()
                 times.append(2500 + static_cast<int>(rng() % 11000));
             }
             m_match.answer(p.id, roundIndex, picks, times);
-            QTimer::singleShot(0, this, [this, generation]() {
-                if (generation == m_generation)
-                    hostChanged();
-            });
+            QMetaObject::invokeMethod(this, "refreshIfCurrent", Qt::QueuedConnection, Q_ARG(int, generation));
         }
     }
 }
@@ -483,7 +506,8 @@ void GameController::hostMessage(int peer, const QVariantMap& message)
             reject.insert(QStringLiteral("code"), QStringLiteral("version"));
             reject.insert(QStringLiteral("why"), QStringLiteral("Andere App-Version oder anderer Fragenkatalog – bitte beide Geräte aktualisieren.")); // for apps before 0.4
             m_lan.sendTo(peer, reject);
-            QTimer::singleShot(500, this, [this, peer]() { m_lan.dropPeer(peer); });
+            m_rejectedPeers.append(peer);
+            QTimer::singleShot(500, this, SLOT(dropRejectedPeer()));
             return;
         }
         if (m_phase != QLatin1String("lobby")) {
@@ -491,7 +515,8 @@ void GameController::hostMessage(int peer, const QVariantMap& message)
             reject.insert(QStringLiteral("code"), QStringLiteral("running"));
             reject.insert(QStringLiteral("why"), QStringLiteral("Das Spiel läuft schon."));
             m_lan.sendTo(peer, reject);
-            QTimer::singleShot(500, this, [this, peer]() { m_lan.dropPeer(peer); });
+            m_rejectedPeers.append(peer);
+            QTimer::singleShot(500, this, SLOT(dropRejectedPeer()));
             return;
         }
         QVariantMap player;

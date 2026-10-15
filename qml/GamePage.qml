@@ -316,13 +316,12 @@ HPage {
                     // middle: category of the round
                     Column {
                         id: middle
-                        anchors.horizontalCenter: page.duel ? parent.horizontalCenter : undefined
-                        anchors.left: page.duel ? undefined : parent.left
-                        anchors.leftMargin: Theme.margin
+                        // x instead of anchors switched to undefined (QtQuick 1)
+                        x: page.duel ? (parent.width - width) / 2 : Theme.margin
                         y: 6 * Theme.u
                         width: page.duel ? 220 * Theme.u : parent.width - 2 * Theme.margin
                         Row {
-                            anchors.horizontalCenter: page.duel ? parent.horizontalCenter : undefined
+                            x: page.duel ? (parent.width - width) / 2 : 0
                             spacing: Theme.spacing / 2
                             Image {
                                 visible: roundRow.round !== null && roundRow.round.cat !== ""

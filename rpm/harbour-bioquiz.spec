@@ -1,5 +1,5 @@
 Name: harbour-bioquiz
-Version: 0.4.0
+Version: 0.5.0
 Release: 1
 Summary: Biologie-Quiz im Stil von Quizduell
 License: Proprietary (private use)
@@ -43,6 +43,11 @@ make install DESTDIR=%{buildroot}
 /usr/share/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Thu Oct 15 2026 smatkovi - 0.5.0-1
+- MeeGo Harmattan edition (Nokia N9/N950, Qt 4.7.4, QtQuick 1.1); shared code
+  builds against Qt 4 as well; same catalogue as 0.4.0, so 0.4.0 and 0.5.0
+  play together
+
 * Thu Oct 15 2026 smatkovi - 0.4.0-1
 - English: menus, messages and all questions switchable in the settings;
   German and English players can play together (needs 0.4.0 everywhere)

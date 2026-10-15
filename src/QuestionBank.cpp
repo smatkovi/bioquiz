@@ -2,10 +2,56 @@
 
 #include <QFile>
 #include <QSet>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QUrl>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#  include <QJsonDocument>
+#  include <QJsonObject>
+#else
+// MeeGo Harmattan (Qt 4.7): QtScript's JSON.parse does the work.
+#  include <QScriptEngine>
+#  include <QScriptValue>
+#  include <QScriptValueList>
+#endif
+
+namespace {
+
+// The whole catalogue as nested QVariantMap/QVariantList, on every Qt.
+bool parseCatalogue(const QByteArray& text, QVariantMap* root, QString* error)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(text, &parseError);
+    if (!doc.isObject()) {
+        *error = parseError.errorString();
+        return false;
+    }
+    *root = doc.object().toVariantMap();
+    return true;
+#else
+    QScriptEngine engine;
+    QScriptValue json = engine.globalObject().property(QString::fromLatin1("JSON"));
+    QScriptValue value = json.property(QString::fromLatin1("parse"))
+        .call(json, QScriptValueList() << QScriptValue(QString::fromUtf8(text.constData(), text.size())));
+    if (engine.hasUncaughtException() || !value.isObject() || value.isArray()) {
+        *error = engine.uncaughtException().toString();
+        engine.clearExceptions();
+        return false;
+    }
+    *root = value.toVariant().toMap();
+    return true;
+#endif
+}
+
+QStringList stringList(const QVariant& value)
+{
+    QStringList result;
+    const QVariantList list = value.toList();
+    for (const QVariant& item : list)
+        result.append(item.toString());
+    return result;
+}
+
+} // namespace
 
 QuestionBank::QuestionBank(QObject* parent)
     : QObject(parent)
@@ -22,22 +68,21 @@ bool QuestionBank::load(const QString& dataDir)
         emit loadedChanged();
         return false;
     }
-    QJsonParseError parseError;
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
-    if (!doc.isObject()) {
-        m_error = QStringLiteral("Fragenkatalog beschädigt: %1").arg(parseError.errorString());
-        m_errorEn = QStringLiteral("Question catalogue damaged: %1").arg(parseError.errorString());
+    QVariantMap root;
+    QString parseError;
+    if (!parseCatalogue(file.readAll(), &root, &parseError)) {
+        m_error = QStringLiteral("Fragenkatalog beschädigt: %1").arg(parseError);
+        m_errorEn = QStringLiteral("Question catalogue damaged: %1").arg(parseError);
         emit loadedChanged();
         return false;
     }
-    const QJsonObject root = doc.object();
     m_version = root.value(QStringLiteral("version")).toString();
 
     m_categoryList.clear();
     m_categories.clear();
-    const QJsonArray cats = root.value(QStringLiteral("categories")).toArray();
-    for (const QJsonValue& value : cats) {
-        QVariantMap cat = value.toObject().toVariantMap();
+    const QVariantList cats = root.value(QStringLiteral("categories")).toList();
+    for (const QVariant& value : cats) {
+        QVariantMap cat = value.toMap();
         const QString key = cat.value(QStringLiteral("key")).toString();
         cat.insert(QStringLiteral("tile"), QStringLiteral("qrc:/cat/%1.png").arg(key));
         m_categories.insert(key, cat);
@@ -47,9 +92,9 @@ bool QuestionBank::load(const QString& dataDir)
     m_bookTitles.clear();
     m_bookTitlesEn.clear();
     QHash<QString, QString> bookLevel;
-    const QJsonArray books = root.value(QStringLiteral("books")).toArray();
-    for (const QJsonValue& value : books) {
-        const QJsonObject book = value.toObject();
+    const QVariantList books = root.value(QStringLiteral("books")).toList();
+    for (const QVariant& value : books) {
+        const QVariantMap book = value.toMap();
         const QString id = book.value(QStringLiteral("id")).toString();
         m_bookTitles.insert(id, book.value(QStringLiteral("title")).toString());
         if (book.contains(QStringLiteral("title_en")))
@@ -57,30 +102,31 @@ bool QuestionBank::load(const QString& dataDir)
         bookLevel.insert(id, book.value(QStringLiteral("level")).toString());
     }
 
-    m_levelList = root.value(QStringLiteral("levels")).toArray().toVariantList();
+    m_levelList = root.value(QStringLiteral("levels")).toList();
 
     m_questions.clear();
     m_byId.clear();
-    const QJsonArray questions = root.value(QStringLiteral("questions")).toArray();
+    const QVariantList questions = root.value(QStringLiteral("questions")).toList();
     m_questions.reserve(questions.size());
-    for (const QJsonValue& value : questions) {
-        const QJsonObject o = value.toObject();
+    for (const QVariant& value : questions) {
+        const QVariantMap o = value.toMap();
         Question q;
         q.id = o.value(QStringLiteral("id")).toString();
         q.book = o.value(QStringLiteral("b")).toString();
         q.level = bookLevel.value(q.book);
         q.cat = o.value(QStringLiteral("c")).toString();
         q.text = o.value(QStringLiteral("q")).toString();
-        const QJsonArray answers = o.value(QStringLiteral("a")).toArray();
-        for (const QJsonValue& a : answers)
-            q.answers.append(a.toString());
+        q.answers = stringList(o.value(QStringLiteral("a")));
         q.textEn = o.value(QStringLiteral("qe")).toString();
-        const QJsonArray answersEn = o.value(QStringLiteral("ae")).toArray();
-        for (const QJsonValue& a : answersEn)
-            q.answersEn.append(a.toString());
+        q.answersEn = stringList(o.value(QStringLiteral("ae")));
         if (q.answersEn.size() != 4)
             q.textEn.clear();
         q.image = o.value(QStringLiteral("i")).toString();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        // Qt 4.7 has no WebP plugin; the MeeGo package carries the pictures as JPEG.
+        if (q.image.endsWith(QLatin1String(".webp")))
+            q.image = q.image.left(q.image.size() - 5) + QLatin1String(".jpg");
+#endif
         q.page = o.value(QStringLiteral("p")).toInt();
         if (q.answers.size() != 4 || q.id.isEmpty() || !m_categories.contains(q.cat))
             continue;

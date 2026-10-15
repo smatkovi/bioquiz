@@ -103,7 +103,10 @@ Rectangle {
         for (var i = 1; i < list.length - 1; ++i)
             list[i].destroy()
         pages = [list[0], page]
-        slide(page, old, true, old !== list[0])
+        // The main menu at the bottom stays, anything above it goes. Counted,
+        // not compared: Qt 4's QtScript (MeeGo) may wrap one page in several
+        // objects, so `old !== list[0]` can be true for the same page.
+        slide(page, old, true, list.length > 1)
         return page
     }
 

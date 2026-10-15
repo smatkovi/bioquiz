@@ -220,9 +220,10 @@ HPage {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.margins: Theme.margin
-            anchors.verticalCenter: page.question.image ? undefined : parent.verticalCenter
-            anchors.bottom: page.question.image ? parent.bottom : undefined
-            anchors.bottomMargin: Theme.spacing
+            // Positioned by y, not by anchors switched to undefined: QtQuick 1
+            // (MeeGo) does not release an anchor that way, the text then
+            // stretches over the whole panel and the picture gets no room.
+            y: page.question.image ? parent.height - height - Theme.spacing : (parent.height - height) / 2
             horizontalAlignment: Text.AlignHCenter
             text: page.question.text || ""
             font.pixelSize: page.question.image ? Theme.fontDefault : Theme.fontLarge

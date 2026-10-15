@@ -18,12 +18,12 @@ Item {
             Item {
                 width: row.width / row.model.length
                 height: row.height
-                property string pos: row.model.length === 1 ? "" : index === 0 ? "-horizontal-left"
+                property string segment: row.model.length === 1 ? "" : index === 0 ? "-horizontal-left"
                                      : index === row.model.length - 1 ? "-horizontal-right" : "-horizontal-center"
                 HFrame {
                     anchors.fill: parent
                     name: "meegotouch-button-inverted-background"
-                          + (index === row.currentIndex ? "-selected" : (seg.pressed ? "-pressed" : "")) + parent.pos
+                          + (index === row.currentIndex ? "-selected" : (seg.pressed ? "-pressed" : "")) + parent.segment
                 }
                 HLabel {
                     anchors.centerIn: parent

@@ -86,15 +86,24 @@ signals:
     void notice(const QString& text);
     void matchFinished(bool won);
 
+private slots:
+    // Named slots instead of lambdas: Qt 4 (MeeGo) cannot connect lambdas.
+    void onMessage(int peer, const QVariantMap& message);
+    void onPeerLost(int peer);
+    void onPeerJoined(int peer);
+    void onConnectionFailed(const QString& reason);
+    void computerChooses();
+    void refreshIfCurrent(int generation);
+    void dropRejectedPeer();
+
 private:
+    struct PendingChoice { int generation; int player; int round; };
     void setMode(const QString& mode, const QString& phase);
     void reset();
     void publish();               // host/solo: snapshot to QML and all guests
     void hostChanged();           // host/solo: after any change of m_match
     void scheduleComputers();
     void broadcastLobby();
-    void onMessage(int peer, const QVariantMap& message);
-    void onPeerLost(int peer);
     void hostMessage(int peer, const QVariantMap& message);
     void guestMessage(const QVariantMap& message);
     void rememberQuestions();
@@ -119,4 +128,6 @@ private:
     int m_generation = 0;        // invalidates timers of an earlier match
     bool m_resultRecorded = false;
     QString m_language;
+    QList<PendingChoice> m_pendingChoices;  // computers about to pick a topic
+    QList<int> m_rejectedPeers;             // dropped half a second after "reject"
 };
