@@ -1,5 +1,5 @@
 Name: harbour-bioquiz
-Version: 0.2.2
+Version: 0.3.0
 Release: 1
 Summary: Biologie-Quiz im Stil von Quizduell
 License: Proprietary (private use)
@@ -43,6 +43,11 @@ make install DESTDIR=%{buildroot}
 /usr/share/icons/hicolor/*/apps/%{name}.png
 
 %changelog
+* Thu Oct 15 2026 smatkovi - 0.3.0-1
+- macOS and iOS editions; Harmattan graphics and Nokia Pure now come from the
+  data folder (free look-alikes otherwise), public code repository without
+  book content
+
 * Wed Oct 14 2026 smatkovi - 0.2.2-1
 - Dark text in the (light) Harmattan text fields: name and address were invisible
 
