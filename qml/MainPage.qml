@@ -5,8 +5,9 @@ HPage {
     id: page
     pageName: "main"
     title: "BioQuiz"
-    subtitle: bank.loaded ? qsTr("%1 Fragen aus %2 Schulbüchern").arg(bank.questionCount).arg(bank.bookCount)
-                          : bank.error
+    subtitle: !bank.loaded ? bank.error
+            : bank.bookCount > 1 ? qsTr("%1 Fragen aus %2 Schulbüchern").arg(bank.questionCount).arg(bank.bookCount)
+            : qsTr("%1 Fragen").arg(bank.questionCount)
     backVisible: false
 
     Flickable {
